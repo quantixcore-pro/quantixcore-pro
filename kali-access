@@ -19,7 +19,7 @@ nethunter kex &
 #write password it will not show in screen
 
 -#downlod VncViewer or nnethunterKex. And paste this 👇
-localhost:5902
+localhost:5901
 
 #password that you write
 
