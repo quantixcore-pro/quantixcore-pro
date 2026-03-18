@@ -1,0 +1,12 @@
+# Ignore environment variables (API keys)
+.env
+
+# Ignore node modules (heavy files)
+node_modules/
+
+# Ignore logs
+*.log
+
+# Ignore system files
+.DS_Store
+Thumbs.db
