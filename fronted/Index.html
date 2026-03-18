@@ -1,1 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AstraQuant Labs</title>
 
+  <style>
+    body {
+      margin: 0;
+      background: black;
+      color: #00ffcc;
+      font-family: monospace;
+      display: flex;
+      height: 100vh;
+    }
+
+    #sidebar {
+      width: 250px;
+      border-right: 1px solid #00ffcc;
+      padding: 10px;
+    }
+
+    #chatbox {
+      flex: 1;
+      padding: 10px;
+      overflow-y: auto;
+    }
+
+    input {
+      width: 70%;
+      padding: 10px;
+      background: black;
+      color: #00ffcc;
+      border: 1px solid #00ffcc;
+    }
+
+    button {
+      padding: 10px;
+      background: #00ffcc;
+      border: none;
+      cursor: pointer;
+    }
+
+    .msg {
+      margin: 10px 0;
+    }
+  </style>
+</head>
+
+<body>
+
+<div id="sidebar">
+  <h3>⚡ AstraQuant</h3>
+  <button onclick="newChat()">+ New Chat</button>
+</div>
+
+<div style="flex:1; display:flex; flex-direction:column;">
+
+  <div id="chatbox"></div>
+
+  <div>
+    <input id="input" placeholder="Ask anything..." />
+    <button onclick="send()">Send</button>
+  </div>
+
+</div>
+
+<script>
+let history = JSON.parse(localStorage.getItem("history")) || [];
+
+function save() {
+  localStorage.setItem("history", JSON.stringify(history));
+}
+
+function newChat() {
+  history = [];
+  save();
+  document.getElementById("chatbox").innerHTML = "";
+}
+
+async function send() {
+  const input = document.getElementById("input");
+  const text = input.value;
+
+  const chatbox = document.getElementById("chatbox");
+  chatbox.innerHTML += `<p class="msg"><b>You:</b> ${text}</p>`;
+
+  input.value = "";
+
+  const res = await fetch("http://localhost:3000/chat", {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({
+      message: text,
+      history: history
+    })
+  });
+
+  const data = await res.json();
+
+  chatbox.innerHTML += `<p class="msg"><b>AI:</b> ${data.reply}</p>`;
+
+  // Show sources
+  if (data.sources) {
+    data.sources.forEach(s => {
+      chatbox.innerHTML += `<p style="color:gray;">🔗 ${s.url}</p>`;
+    });
+  }
+
+  history.push({ role: "user", content: text });
+  history.push({ role: "assistant", content: data.reply });
+
+  save();
+  chatbox.scrollTop = chatbox.scrollHeight;
+}
+</script>
+
+</body>
+</html>
