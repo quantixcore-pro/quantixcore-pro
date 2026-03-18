@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>AstraQuant Labs</title>
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: #00ffcc;
+  font-family: monospace;
+}
+
+header {
+  padding: 15px;
+  border-bottom: 1px solid #00ffcc;
+}
+
+#container {
+  display: flex;
+}
+
+/* Sidebar */
+#sidebar {
+  width: 200px;
+  border-right: 1px solid #00ffcc;
+  height: 90vh;
+  overflow-y: auto;
+}
+
+.chat-item {
+  padding: 10px;
+  cursor: pointer;
+  border-bottom: 1px solid #003333;
+}
+
+.chat-item:hover {
+  background: #001a1a;
+}
+
+/* Chat area */
+#main {
+  flex: 1;
+}
+
+#chat {
+  height: 75vh;
+  overflow-y: auto;
+  padding: 10px;
+}
+
+.msg { margin: 8px 0; }
+.user { color: #00ffff; }
+.bot { color: #00ff99; }
+
+#inputArea {
+  display: flex;
+  border-top: 1px solid #00ffcc;
+}
+
+input {
+  flex: 1;
+  padding: 12px;
+  background: black;
+  color: #00ffcc;
+  border: none;
+}
+
+button {
+  padding: 12px;
+  background: #00ffcc;
+  border: none;
+  cursor: pointer;
+}
+</style>
+</head>
+
+<body>
+
+<header>🌑 AstraQuant Labs AI</header>
+
+<div id="container">
+
+  <div id="sidebar">
+    <div class="chat-item" onclick="newChat()">➕ New Chat</div>
+    <div id="history"></div>
+  </div>
+
+  <div id="main">
+    <div id="chat"></div>
+
+    <div id="inputArea">
+      <input id="input" placeholder="Ask anything..." />
+      <button onclick="send()">Send</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let currentChat = "chat_" + Date.now();
+const chatBox = document.getElementById("chat");
+const historyBox = document.getElementById("history");
+
+// Load chats
+function loadChats() {
+  historyBox.innerHTML = "";
+  for (let key in localStorage) {
+    if (key.startsWith("chat_")) {
+      const div = document.createElement("div");
+      div.className = "chat-item";
+      div.innerText = key;
+      div.onclick = () => switchChat(key);
+      historyBox.appendChild(div);
+    }
+  }
+}
+
+// Switch chat
+function switchChat(id) {
+  currentChat = id;
+  chatBox.innerHTML = localStorage.getItem(id) || "";
+}
+
+// New chat
+function newChat() {
+  currentChat = "chat_" + Date.now();
+  chatBox.innerHTML = "";
+}
+
+// Save chat
+function save() {
+  localStorage.setItem(currentChat, chatBox.innerHTML);
+  loadChats();
+}
+
+// Add message
+function add(text, cls) {
+  chatBox.innerHTML += `<div class="msg ${cls}">${text}</div>`;
+  chatBox.scrollTop = chatBox.scrollHeight;
+  save();
+}
+
+// Basic AI brain
+function brain(input) {
+  input = input.toLowerCase();
+
+  if (input.includes("hello")) return "Hello 👋 I am AstraQuant.";
+  if (input.includes("who are you")) return "I am AstraQuant AI.";
+  if (input.includes("time")) return new Date().toLocaleTimeString();
+  if (input.includes("date")) return new Date().toDateString();
+
+  return null;
+}
+
+// Search
+async function search(query) {
+  try {
+    const res = await fetch(`https://api.duckduckgo.com/?q=${query}&format=json`);
+    const data = await res.json();
+    return data.Abstract || "No result found.";
+  } catch {
+    return "Search failed.";
+  }
+}
+
+// Send message
+async function send() {
+  const input = document.getElementById("input");
+  const text = input.value;
+
+  if (!text) return;
+
+  add("You: " + text, "user");
+
+  let reply = brain(text);
+
+  if (!reply) {
+    add("🔎 Searching...", "bot");
+    reply = await search(text);
+  }
+
+  add("AstraQuant: " + reply, "bot");
+
+  input.value = "";
+}
+
+// Enter key
+document.getElementById("input").addEventListener("keypress", e => {
+  if (e.key === "Enter") send();
+});
+
+// Init
+loadChats();
+</script>
+
+</body>
+</html>
