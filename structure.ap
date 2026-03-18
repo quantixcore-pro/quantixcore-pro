@@ -1,0 +1,10 @@
+quantixcore-pro/
+ ├── frontend/
+ │    └── index.html
+ │
+ ├── backend/
+ │    ├── server.js
+ │    ├── package.json
+ │    └── .env
+ │
+ └── .gitignore
